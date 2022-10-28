@@ -1,0 +1,83 @@
+{%- set documentTitle %}{{- page.fileSlug | deslug | capitalise }} – {{ websiteTitle -}}{% endset -%}
+{%- set description %}{{ websiteDescription }}{% endset -%}
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>{{ documentTitle }}</title>
+	<meta name="description" content="{{ description }}">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	{% include "_social-meta-tags.njk" %}
+	<link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+	<link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body id="top">
+	<a class="skip-link visually-hidden-focusable" href="#content">Skip to content</a>
+	<header class="header">
+		<div class="container">
+			<a class="header-link" href="/">
+				<span class="header-title">
+                    {{ websiteTitle | deslug | capitalise }}
+                    <span class="visually-hidden">home</span>
+                </span>
+			</a>
+			<hr class="header-hr" aria-hidden="true">
+		</div>
+	</header>
+	<div class="container">
+        {% block beforeContent %}{% endblock %}
+        {% set hasAside = "_wiki/_Sidebar.md" | fileExists %}
+        <main id="content"{% if hasAside %} class="has-aside"{% endif %}>
+            <h1 class="title">{{ page.fileSlug | deslug | capitalise }}</h1>
+            <div class="content">
+                {% block content %}{{ content | safe }}{% endblock %}
+            </div>
+            {% if hasAside %}
+                <aside>
+                    {% renderFile "_wiki/_Sidebar.md" %}
+                </aside>
+            {% endif %}
+        </main>
+        {%- if (content | textLength) > 500 -%}
+            <a class="back-to-top" href="#top">Back to top</a>
+        {%- endif -%}
+	</div>
+	<footer class="footer">
+		<hr class="footer-hr" aria-hidden="true">
+		<div class="container">
+            {% if "_wiki/_Footer.md" | fileExists %}
+                {% renderFile "_wiki/_Footer.md" %}
+            {% endif %}
+            <div class="footer-inline-links">
+				{%- set wikiPageBaseURL = "https://github.com/" + constants.GITHUB_REPOSITORY + "/wiki/" + page.fileSlug -%}
+				{%- set log = page.inputPath | gitLog -%}
+				<ul class="footer-inline-links">
+					{% if log | length %}
+						<li>
+							<a href="{{ wikiPageBaseURL }}/_compare/{{ log.commit }}?diff=unified">
+								{{- log.author }} edited this page {{ log.date | formatDate -}}
+							</a>
+						</li>
+					{% endif %}
+                    <li>
+                        <a href="{{ wikiPageBaseURL }}/_edit">
+                            Edit this page
+                        </a>
+                    </li>
+                </ul>
+			</div>
+			{% if not constants.DEPLOYED %}
+				<h2 class="margin-top-0">Development data</h2>
+				<h3>Constants</h3>
+				<pre><code>{{ constants | dump(2) }}</code></pre>
+				<h3>Page</h3>
+				<pre><code>{{ page | dump(2) }}</code></pre>
+				<h3>Git Log</h3>
+				<pre><code>{{ log | dump(2) }}</code></pre>
+			{% endif %}
+		</div>
+	</footer>
+    <script src="/assets/scripts.js"></script>
+</body>
+
+</html>
